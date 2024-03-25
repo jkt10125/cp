@@ -13,7 +13,7 @@ void __print(const float &x) { std::cerr << x; }                            void
 void __print(const double &x) { std::cerr << x; }                           void __read(double &x) { std::cin >> x; }
 void __print(const long double &x) { std::cerr << x; }                      void __read(long double &x) { std::cin >> x; }
 void __print(const char &x) { std::cerr << '\'' << x << '\''; }             void __read(char &x) { std::cin >> x; }
-void __print(const char *x) { std::cerr << '\"' << x << '\"'; }             void __read(char *x) { std::cin >> x; }
+void __print(const char *x) { std::cerr << '\"' << x << '\"'; }             // void __read(char *x) { std::cin >> x; }
 void __print(const std::string &x) { std::cerr << '\"' << x << '\"'; }      void __read(std::string &x) { std::cin >> x; }
 void __print(const bool &x) { std::cerr << (x ? "true" : "false"); }        void __read(bool &x) { std::cin >> x; }
 
@@ -47,6 +47,7 @@ void __read(T &x) { for (auto &i : x) { __read(i); } }
 template <class T, class... U>
 void re(T&& a, U&&... b) { __read(std::forward<T>(a)); (void)std::initializer_list<int>{(__read(std::forward<U>(b)), 0)...}; }
 
+#define SUPPRESS_WARNINGS(x) (void)(x)
 
 void setIO(std::string input = "", std::string output = "") {
     std::ios_base::sync_with_stdio(false);
@@ -58,17 +59,24 @@ void setIO(std::string input = "", std::string output = "") {
 
 using namespace std;
 
-void solve() {
+void precompute() {
+    
+}
+
+void solve(int _) {
+    SUPPRESS_WARNINGS(_);
     
 }
 
 signed main() {
     setIO();
+    precompute();
     int t = 1;
     std::cin >> t;
-    for (int _ = 1; _ <= t; _++) {
-        solve();
+    for (int _ = 1; _ <= t; ++_) {
+        solve(_);
     }
+    return 0;
 }
 
 #ifdef COMMENT

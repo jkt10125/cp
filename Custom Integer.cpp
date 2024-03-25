@@ -109,3 +109,79 @@ using Mint = ModularInt<0>;
  
 template <>
 int Mint::mod = 998244353;
+
+
+template <int p>
+struct ModularLong {
+    long long value;
+    static long long mod;
+
+    constexpr static void setMod(long long x) {
+        mod = x;
+    }
+
+    constexpr ModularLong(long long x = 0) : value(x) {
+        // if (abs(value) >= mod) value %= mod;
+        // if (value < 0) value += mod;
+    }
+
+    explicit constexpr operator long long() const {
+        return value;
+    }
+
+    constexpr ModularLong& operator += (const ModularLong& other) {
+        value += other.value;
+        if (value >= mod) value -= mod;
+        return *this;
+    }
+
+    constexpr ModularLong& operator -= (const ModularLong& other) {
+        value -= other.value;
+        if (value < 0) value += mod;
+        return *this;
+    }
+
+    // use 128 bit integer to avoid overflow
+    constexpr ModularLong& operator *= (const ModularLong& other) {
+        value = static_cast<long long>((__int128)value * other.value % mod);
+        return *this;
+    }
+
+    constexpr ModularLong& operator /= (const ModularLong& other) {
+        return *this *= other.inverse();
+    }
+
+    constexpr ModularLong operator + (const ModularLong& other) const {
+        return ModularLong(*this) += other;
+    }
+
+    constexpr ModularLong operator - (const ModularLong& other) const {
+        return ModularLong(*this) -= other;
+    }
+
+    constexpr ModularLong operator * (const ModularLong& other) const {
+        return ModularLong(*this) *= other;
+    }
+
+    constexpr ModularLong operator / (const ModularLong& other) const {
+        return ModularLong(*this) /= other;
+    }
+
+    constexpr ModularLong pow(long long b) const {
+        ModularLong ret{1}, a{*this};
+        while (b > 0) {
+            if (b & 1) ret *= a;
+            a *= a;
+            b >>= 1;
+        }
+        return ret;
+    }
+
+    constexpr ModularLong inverse() const {
+        return pow(mod - 2);
+    }
+
+    constexpr bool operator == (const ModularLong& other) const {
+        return value == other.value;
+    }
+}; // NOTE: remember to set the mod value
