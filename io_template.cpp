@@ -49,6 +49,22 @@ void re(T&& a, U&&... b) { __read(std::forward<T>(a)); (void)std::initializer_li
 
 #define SUPPRESS_WARNINGS(x) (void)(x)
 
+template <typename T, typename OuterSize>
+auto CreateVector(OuterSize outerSize) { return std::vector<T>(outerSize); }
+
+template <typename T, typename OuterSize, typename ...OtherSize>
+auto CreateVector(OuterSize outerSize, OtherSize&& ...otherSize) {
+    return std::vector(outerSize, CreateVector<T, OtherSize...>(std::forward<OtherSize>(otherSize)...));
+}
+
+// Typedefs for common types
+typedef int16_t    i16;         typedef uint16_t    u16;
+typedef int32_t    i32;         typedef uint32_t    u32;
+typedef int64_t    i64;         typedef uint64_t    u64;
+typedef __int128_t i128;        typedef __uint128_t u128;
+
+
+
 void setIO(std::string input = "", std::string output = "") {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
