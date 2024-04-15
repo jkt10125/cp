@@ -63,8 +63,6 @@ typedef int32_t    i32;         typedef uint32_t    u32;
 typedef int64_t    i64;         typedef uint64_t    u64;
 typedef __int128_t i128;        typedef __uint128_t u128;
 
-
-
 void setIO(std::string input = "", std::string output = "") {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
