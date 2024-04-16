@@ -1,118 +1,155 @@
 #include <bits/stdc++.h>
 
-/*-----------------------------------------------------                     ---------------------------------------------------------------------
-Explicitly defined these functions because of bottom 4.                     Intentionally not returning the istream object to not allow chaining.
--------------------------------------------------------                     -------------------------------------------------------------------*/
-void __print(const int &x) { std::cerr << x; }                              void __read(int &x) { std::cin >> x; }
-void __print(const long &x) { std::cerr << x; }                             void __read(long &x) { std::cin >> x; }
-void __print(const long long &x) { std::cerr << x; }                        void __read(long long &x) { std::cin >> x; }
-void __print(const unsigned &x) { std::cerr << x; }                         void __read(unsigned &x) { std::cin >> x; }
-void __print(const unsigned long &x) { std::cerr << x; }                    void __read(unsigned long &x) { std::cin >> x; }
-void __print(const unsigned long long &x) { std::cerr << x; }               void __read(unsigned long long &x) { std::cin >> x; }
-void __print(const float &x) { std::cerr << x; }                            void __read(float &x) { std::cin >> x; }
-void __print(const double &x) { std::cerr << x; }                           void __read(double &x) { std::cin >> x; }
-void __print(const long double &x) { std::cerr << x; }                      void __read(long double &x) { std::cin >> x; }
-void __print(const char &x) { std::cerr << '\'' << x << '\''; }             void __read(char &x) { std::cin >> x; }
-void __print(const char *x) { std::cerr << '\"' << x << '\"'; }             // void __read(char *x) { std::cin >> x; }
-void __print(const std::string &x) { std::cerr << '\"' << x << '\"'; }      void __read(std::string &x) { std::cin >> x; }
-void __print(const bool &x) { std::cerr << (x ? "true" : "false"); }        void __read(bool &x) { std::cin >> x; }
+// template <typename int>
+struct TrieMap {
 
-// Forward declaration to handle the case of pair of vectors.
-template <typename T> void __print(const T &);
-template <typename T, typename V> void __print(const std::pair<T, V> &);
+    const static int btrie_DEPTH = 31;
+    const static int btrie_MAX = 0xffffffff;
+    const static int btrie_MIN = 0x00000000;
+    const static int BTRIE_NODES = 1000000;
 
-template <typename T, typename V>
-void __print(const std::pair<T, V> &x) { std::cerr << '{'; __print(x.first); std::cerr << ", "; __print(x.second); std::cerr << '}'; }
+    struct node {
+        int c[2];
+        int cnt, par;
+        int value;
+    };
 
-template <typename T>
-void __print(const T &x) { int f = 0; std::cerr << '{'; for (const auto &i: x) std::cerr << (f++ ? ", " : ""), __print(i); std::cerr << '}'; }
+    node btrie[BTRIE_NODES];
 
-void _print() { std::cerr << "]\n"; }
-template <typename T, typename... V>
-void _print(T t, V... v) { __print(t); if (sizeof...(v)) std::cerr << ", "; _print(v...); }
+    int del[BTRIE_NODES];
+    int btrie_node_ctr = 1, btrie_del_ctr = 0;
 
-// We are forced to use this macro because of the value of __func__ and __LINE__.
-#define dbg(x...) std::cerr << __func__ << ":" << __LINE__ << " [" << #x << "] = ["; _print(x); std::cerr << std::endl;
-
-// Forward declaration to handle the case of pair of vectors.
-template <typename T> void __read(T &);
-template <typename T, typename V> void __read(std::pair<T, V> &);
-
-template <typename T, typename V>
-void __read(std::pair<T, V> &x) { __read(x.first); __read(x.second); }
-
-template <typename T>
-void __read(T &x) { for (auto &i : x) { __read(i); } }
-
-template <class T, class... U>
-void re(T&& a, U&&... b) { __read(std::forward<T>(a)); (void)std::initializer_list<int>{(__read(std::forward<U>(b)), 0)...}; }
-
-#define SUPPRESS_WARNINGS(x) (void)(x)
-
-void setIO(std::string input = "", std::string output = "") {
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(nullptr);
-
-    if (!input.empty()) { freopen(input.c_str(), "r", stdin); }
-    if (!output.empty()) { freopen(output.c_str(), "w", stdout); }
-}
-
-using namespace std;
-
-void precompute() {
-    
-}
-
-void solve(int _) {
-    SUPPRESS_WARNINGS(_);
-    int n; re(n);
-    map<string, vector<int>> mp;
-    
-    for (int i = 0; i < n; i++) {
-        string x, y;
-        re(x, y);
-
-        x += "#";
-        y += "$";
-
-        mp[x].push_back(i);
-        mp[y].push_back(i);
+    TrieMap() {
+        std::cout << "hello" << std::endl;
+        btrie[0].par = -1;
+        btrie[0].c[0] = btrie[0].c[1] = btrie[0].cnt = 0;
+        btrie_node_ctr = 1, btrie_del_ctr = 0;
     }
 
-    vector<int> dp(1 << n, 0); // dp[mask] : max items that can be taken from the mask
-    for (int i = 1; i < (1 << n); i++) {
-        for (int j = 0; j < n; j++) {
-            if (i & (1 << j)) {
-                int mask = i ^ (1 << j);
-                dp[i] = max(dp[i], dp[mask] + 1);
-            
+    int new_node_impl() {
+        int idx = (btrie_del_ctr) ? del[--btrie_del_ctr] : btrie_node_ctr++;
+        btrie[idx].c[0] = btrie[idx].c[1] = btrie[idx].cnt = 0;
+        return idx;
+    }
+
+    void go_up_impl(int &p, int &x) {
+        p = btrie[p].par;
+        x >>= 1;
+    }
+
+    void go_down_impl(int &p, int &x, int b) {
+        p = btrie[p].c[b];
+        x = x << 1 | b;
+    }
+
+    int find_impl(int p, int &x, int up, int b) {
+        if (up) {
+            while (!((b ^ (x & 1)) && btrie[btrie[p].par].c[b])) {
+                go_up_impl(p, x);
+                if (p == -1) { return 0; }
+            }
+            go_up_impl(p, x);
+            go_down_impl(p, x, b);
+        }
+        while (btrie[p].c[0] | btrie[p].c[1]) {
+            go_down_impl(p, x, b ^ (btrie[p].c[1 ^ b] != 0));
+        }
+        return 1;
+    }
+
+    int &value_at (int x) {
+        x ^= (1 << btrie_DEPTH);
+        int p = 0;
+        for (int i = btrie_DEPTH; i >= 0; i--) {
+            int b = (x >> i) & 1;
+            if (!btrie[p].c[b]) {
+                btrie[p].c[b] = new_node_impl();
+                btrie[btrie[p].c[b]].par = p;
+            }
+            p = btrie[p].c[b];
+        }
+        if (!btrie[p].cnt) {
+            for (int tp = p; tp != -1; tp = btrie[tp].par) {
+                btrie[tp].cnt++;
+            }
+            btrie[p].value = int();
+        }
+        return btrie[p].value;
+    }
+
+    bool erase(int x, int i, int p) {
+        x ^= (1 << btrie_DEPTH);
+        if (i == -1) {
+            return (btrie[p].cnt) ? (btrie[p].cnt--, 1) : 0;
+        }
+        int b = (x >> i) & 1;
+        if (!btrie[p].c[b]) { return 0; }
+        bool ok = erase(x, i - 1, btrie[p].c[b]);
+        if (ok) {
+            btrie[p].cnt--;
+            if (!btrie[btrie[p].c[b]].cnt) {
+                del[btrie_del_ctr++] = btrie[p].c[b];
+                btrie[p].c[b] = 0;
             }
         }
+        return ok;
     }
-}
 
-signed main() {
-    setIO();
-    precompute();
-    int t = 1;
-    std::cin >> t;
-    for (int _ = 1; _ <= t; ++_) {
-        solve(_);
+    int get_extreme(int b) {
+        int p = 0, res = 0;
+        (btrie[0].cnt) ? find_impl(p, res, 0, 1 ^ b) : (res = (b) ? btrie_MIN : btrie_MAX);
+        return res ^ (1 << btrie_DEPTH);
     }
+
+    int find(int x, int b) {
+        x ^= (1 << btrie_DEPTH);
+        int p = 0, res = 0;
+        for (int i = btrie_DEPTH; i >= 0; i--) {
+            int bit = (x >> i) & 1;
+            if (btrie[p].c[bit]) {
+                p = btrie[p].c[bit];
+                res = res << 1 | bit;
+            } else {
+                (find_impl(p, res, 1 ^ b ^ bit, b) == 0) ? (res = (b) ? btrie_MIN : btrie_MAX) : 0;
+                break;
+            }
+        }
+        return res ^ (1 << btrie_DEPTH);
+    }
+
+    int order_of_key(int x) {
+        x ^= (1 << btrie_DEPTH);
+        int p = 0, res = 0;
+        for (int i = btrie_DEPTH; i >= 0; i--) {
+            int b = (x >> i) & 1;
+            res += b * btrie[btrie[p].c[0]].cnt;
+            p = btrie[p].c[b];
+            if (!p) { break; }
+        }
+        return res;
+    }
+
+    int find_by_order(int k) {
+        int p = 0, res = 0;
+        for (int i = btrie_DEPTH; i >= 0; i--) {
+            if (btrie[p].c[0] && btrie[btrie[p].c[0]].cnt > k) {
+                p = btrie[p].c[0];
+            } else {
+                k -= btrie[btrie[p].c[0]].cnt;
+                p = btrie[p].c[1];
+                res |= 1 << i;
+            }
+        }
+        return res ^ (1 << btrie_DEPTH);
+    }
+};
+
+int main() {
+    TrieMap trie{};
+    std::cout << "hello" << std::endl;
+    // trie.value_at(1) = 1;
+    // trie.value_at(4) = 4;
+    // trie.value_at(3) = 3;
+    // trie.value_at(2) = 2;
     return 0;
 }
-
-#ifdef COMMENT
-Author: leaf_node(jkt)
-
-Some advice while solving problems:
-1. Read the problem statement carefully (most of the times, you will find the answer there itself)
-2. Keep eye on the constraints (it will help you to guess the complexity of the solution)
-3. Analyzse the sample test cases carefully and try to find the pattern
-4. Think of some edge cases and try to solve them manually
-5. Always check for overflow before submitting the code.
-5. Donot spend too much time on a single method (if the approach is not clear, try to think of some other approach)
-6. Always be organised while coding (it will help you to debug the code easily)
-7. Its always better to think 5 mins before submitting the code rather than getting WA and then thinking for 30 mins.
-8. WA for pretest 2 is not your enemy! the real enemy is the person who shook the jar. XD
-#endif
