@@ -14,7 +14,7 @@ struct TrieMap {
     TrieMap() : btrie(1, {0, 0, 0, -1, 0}) { }
 
     int new_node_impl() {
-        int idx = (del.empty()) ? btrie.size() : del.back();
+        int idx = (del.empty()) ? static_cast<int>(btrie.size()) : del.back();
         (del.empty()) ? btrie.push_back({}) : del.pop_back();
         btrie[idx][0] = btrie[idx][1] = btrie[idx][2] = 0;
         return idx;
@@ -32,9 +32,10 @@ struct TrieMap {
 
     int find_impl(int p, int &x, int up, int b) {
         if (up) {
+            if (!p) { return 0; }
             while (!((b ^ (x & 1)) && btrie[btrie[p][3]][b])) {
                 go_up_impl(p, x);
-                if (p == -1) { return 0; }
+                if (!p) { return 0; }
             }
             go_up_impl(p, x);
             go_down_impl(p, x, b);
