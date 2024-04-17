@@ -6,7 +6,6 @@ struct TrieMap {
     const static int btrie_DEPTH = 31;
     const static int btrie_MAX = 0xffffffff;
     const static int btrie_MIN = 0x00000000;
-    const static int BTRIE_NODES = 1000000;
 
     // c[2], cnt, par, value
     std::vector<std::array<int, 5>> btrie;
@@ -131,16 +130,71 @@ struct TrieMap {
         }
         return res ^ (1 << btrie_DEPTH);
     }
+
+    int get_max_xor(int x) {
+        x ^= (1 << btrie_DEPTH);
+        int p = 0, res = 0;
+        for (int i = btrie_DEPTH; i >= 0; i--) {
+            int b = (x >> i) & 1;
+            if (btrie[p][1 ^ b]) {
+                p = btrie[p][1 ^ b];
+                res |= 1 << i;
+            } else {
+                p = btrie[p][b];
+            }
+        }
+        return res ^ x;
+    }
 };
 
-int main() {
-    TrieMap trie;
-    std::cout << "hello" << std::endl;
-    trie.value_at(1) = 1;
-    trie.value_at(4) = 4;
-    trie.value_at(3) = 3;
-    trie.value_at(-1) = 2;
+void solve() {
+    int n, mex = 0;
+    std::cin >> n;
+    std::vector<bool> hsh(n + 1);
+    std::vector<int> A(n);
+    TrieMap mp;
+    long long sum = 0, ans = 0;
+    for (int i = 0; i < n; i++) {
+        std::cin >> A[i];
+        hsh[A[i]] = 1;
+        while (hsh[mex]) { mex++; }
+        sum += mex;
+        mp.value_at(mex)++;
+    }
+    ans = sum;
+    for (int i = 0; i < n; i++) {
+        int min_val = mp.get_extreme(0);
+        sum -= min_val;
+        mp.value_at(min_val)--;
+        if (mp.value_at(min_val) == 0) {
+            mp.erase(min_val, mp.btrie_DEPTH, 0);
+        }
+        mp.value_at(A[i]) = 0;
+        int next = mp.find(A[i] + 1, 1);
+        while (next != INT_MIN) {
+            int second = mp.value_at(next);
+            sum -= next * 1ll * second;
+            mp.value_at(A[i]) += second;
+            sum += A[i] * 1ll * second;
+            mp.erase(next++, mp.btrie_DEPTH, 0);
+            next = mp.find(next, 1);
+        }
+        mp.value_at(n) = 1;
+        sum += n;
+        ans = std::max(ans, sum);
+    }
+ 
+    std::cout << ans << '\n';
+}
 
-    std::cout << trie.find_by_order(2) << std::endl;
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    int t;
+    std::cin >> t;
+    while (t--) {
+        solve();
+    }
     return 0;
 }
